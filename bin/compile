@@ -54,6 +54,10 @@ for PACKAGE in $(cat $BUILD_DIR/Aptfile); do
         topic "Fetching $PACKAGE"
         curl -s -L -z $PACKAGE_FILE -o $PACKAGE_FILE $PACKAGE 2>&1 | indent
     fi
+
+    if [[ ! -f $PACKAGE_FILE ]]; then
+        echo "failed to provide $PACKAGE" | error
+    fi
   else
     topic "Fetching .debs for $PACKAGE"
     apt-get $APT_OPTIONS -y --force-yes -d install --reinstall $PACKAGE | indent
