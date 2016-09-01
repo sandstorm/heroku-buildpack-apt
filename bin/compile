@@ -37,6 +37,22 @@ mkdir -p "$APT_STATE_DIR/lists/partial"
 
 APT_OPTIONS="-o debug::nolocking=true -o dir::cache=$APT_CACHE_DIR -o dir::state=$APT_STATE_DIR"
 
+CUSTOM_SOURCES=${BUILD_DIR}/sources.list
+topic "adding repositories from sources.list"
+if [[ -f ${CUSTOM_SOURCES} ]]; then
+    APT_SOURCES=${APT_STATE_DIR}/sources.list
+    APT_OPTIONS="$APT_OPTIONS -o dir::etc::sourceList=$APT_SOURCES"
+    cp /etc/apt/sources.list ${APT_SOURCES}
+    if [[ -f /etc/apt/sources.list ]]; then
+        echo "# custom repositories" >> ${APT_SOURCES}
+        cat ${CUSTOM_SOURCES} >> ${APT_SOURCES}
+    else
+        error "failed to locate '/etc/apt/sources.list'"
+    fi
+else
+    echo "no additional repositories found in '$CUSTOM_SOURCES'" | indent
+fi
+
 topic "Updating apt caches"
 apt-get $APT_OPTIONS update | indent
 
@@ -54,7 +70,7 @@ for PACKAGE in $(cat $BUILD_DIR/Aptfile); do
     fi
 
     if [[ ! -f $PACKAGE_FILE ]]; then
-        echo "failed to provide $PACKAGE" | error
+        error "failed to provide $PACKAGE"
     fi
   else
     topic "Fetching .debs for $PACKAGE"
