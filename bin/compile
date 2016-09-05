@@ -49,6 +49,21 @@ else
     echo "no additional repositories found in '$CUSTOM_SOURCES'" | indent
 fi
 
+CUSTOM_SOURCES_KEYS=${BUILD_DIR}/source.gpg.d
+topic "importing public keys of custom repositories"
+if [[ -d ${CUSTOM_SOURCES_KEYS} ]]; then
+    TRUSTED_GPG_D=${BUILD_DIR}/.apt/trusted.gpg.d
+    mkdir -p ${TRUSTED_GPG_D}
+    cp /etc/apt/trusted.gpg.d/* ${TRUSTED_GPG_D}
+    cp ${CUSTOM_SOURCES_KEYS}/* ${TRUSTED_GPG_D}
+    APT_OPTIONS="$APT_OPTIONS -o dir::etc::trustedparts=$TRUSTED_GPG_D"
+else
+    echo "no public repositories keys found in '$CUSTOM_SOURCES_KEYS'" | indent
+fi
+
+topic "options for apt"
+echo ${APT_OPTIONS} | indent
+
 topic "Updating apt caches"
 apt-get ${APT_OPTIONS} update | indent
 

@@ -30,6 +30,11 @@ Include a list of apt package names to be installed in a file named `Aptfile`
     deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main
     deb-src http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main
 
+#### trusted.gpg.d (optional but recommended)
+
+    gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv 86F44E2A
+    gpg --export 86F44E2A > trusted.gpg.d/ppa.launchpad.net.gpg
+
 #### Gemfile (optional)
 
     source "https://rubygems.org"
