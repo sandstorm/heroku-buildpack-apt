@@ -43,51 +43,47 @@ if [[ -f ${CUSTOM_SOURCES} ]]; then
     APT_SOURCES=${APT_STATE_DIR}/sources.list
     APT_OPTIONS="$APT_OPTIONS -o dir::etc::sourceList=$APT_SOURCES"
     cp /etc/apt/sources.list ${APT_SOURCES}
-    if [[ -f /etc/apt/sources.list ]]; then
-        echo "# custom repositories" >> ${APT_SOURCES}
-        cat ${CUSTOM_SOURCES} >> ${APT_SOURCES}
-    else
-        error "failed to locate '/etc/apt/sources.list'"
-    fi
+    echo "# custom repositories" >> ${APT_SOURCES}
+    cat ${CUSTOM_SOURCES} >> ${APT_SOURCES}
 else
     echo "no additional repositories found in '$CUSTOM_SOURCES'" | indent
 fi
 
 topic "Updating apt caches"
-apt-get $APT_OPTIONS update | indent
+apt-get ${APT_OPTIONS} update | indent
 
-for PACKAGE in $(cat $BUILD_DIR/Aptfile); do
-  if [[ $PACKAGE == *deb ]]; then
-    PACKAGE_NAME=$(basename $PACKAGE .deb)
-    PACKAGE_FILE=$APT_CACHE_DIR/archives/$PACKAGE_NAME.deb
+for PACKAGE in $(cat ${BUILD_DIR}/Aptfile); do
+  if [[ ${PACKAGE} == *deb ]]; then
+    PACKAGE_NAME=$(basename ${PACKAGE} .deb)
+    PACKAGE_FILE=${APT_CACHE_DIR}/archives/${PACKAGE_NAME}.deb
 
-    if [[ -f $PACKAGE ]]; then
+    if [[ -f ${PACKAGE} ]]; then
         topic "Copy $PACKAGE"
-        cp -a $PACKAGE $PACKAGE_FILE
+        cp -a ${PACKAGE} ${PACKAGE_FILE}
     else
         topic "Fetching $PACKAGE"
-        curl -s -L -z $PACKAGE_FILE -o $PACKAGE_FILE $PACKAGE 2>&1 | indent
+        curl -s -L -z ${PACKAGE_FILE} -o ${PACKAGE_FILE} ${PACKAGE} 2>&1 | indent
     fi
 
-    if [[ ! -f $PACKAGE_FILE ]]; then
+    if [[ ! -f ${PACKAGE_FILE} ]]; then
         error "failed to provide $PACKAGE"
     fi
   else
     topic "Fetching .debs for $PACKAGE"
-    apt-get $APT_OPTIONS -y --force-yes -d install --reinstall $PACKAGE | indent
+    apt-get ${APT_OPTIONS} -y --force-yes -d install --reinstall ${PACKAGE} | indent
   fi
 done
 
-mkdir -p $BUILD_DIR/.apt
+mkdir -p ${BUILD_DIR}/.apt
 
-for DEB in $(ls -1 $APT_CACHE_DIR/archives/*.deb); do
-  topic "Installing $(basename $DEB)"
-  dpkg -x $DEB $BUILD_DIR/.apt/
+for DEB in $(ls -1 ${APT_CACHE_DIR}/archives/*.deb); do
+  topic "Installing $(basename ${DEB})"
+  dpkg -x ${DEB} ${BUILD_DIR}/.apt/
 done
 
 topic "Writing profile script"
-mkdir -p $BUILD_DIR/.profile.d
-cat <<EOF >$BUILD_DIR/.profile.d/000_apt.sh
+mkdir -p ${BUILD_DIR}/.profile.d
+cat <<EOF >${BUILD_DIR}/.profile.d/000_apt.sh
 export PATH="\$HOME/.apt/usr/bin:\$PATH"
 export LD_LIBRARY_PATH="\$HOME/.apt/usr/lib/x86_64-linux-gnu:\$HOME/.apt/usr/lib/i386-linux-gnu:\$HOME/.apt/usr/lib:\$LD_LIBRARY_PATH"
 export LIBRARY_PATH="\$HOME/.apt/usr/lib/x86_64-linux-gnu:\$HOME/.apt/usr/lib/i386-linux-gnu:\$HOME/.apt/usr/lib:\$LIBRARY_PATH"
