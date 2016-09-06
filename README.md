@@ -83,3 +83,10 @@ Include a list of apt package names to be installed in a file named `Aptfile`
 ## License
 
 MIT
+
+## Known Bugs
+
+### removed packages stay in cache
+
+If a package is installed via an URL it is downloaded and cached locally.
+If the package is removed from the *Aptfile* it stays in the cache and is still installed during deployment.
