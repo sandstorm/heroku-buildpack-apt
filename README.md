@@ -39,14 +39,14 @@ Include a list of apt package names to be installed in a file named `Aptfile`
 
     source "https://rubygems.org"
     gem "pg"
-    
+
 ### Compile with [Anvil](https://github.com/ddollar/anvil-cli)
 
     $ heroku plugins:install https://github.com/ddollar/heroku-build
-    
+
     $ heroku create apt-pg-test
-    
-    $ heroku build . -b ddollar/multi -r 
+
+    $ heroku build . -b ddollar/multi -r
     Checking for app files to sync... done, 2 files needed
     Uploading: 100.0%
     Launching build process... done
@@ -90,3 +90,9 @@ MIT
 
 If a package is installed via an URL it is downloaded and cached locally.
 If the package is removed from the *Aptfile* it stays in the cache and is still installed during deployment.
+
+You have to login to the Heroku host and remove it manually.
+
+```
+ls -lisah /home/[heroku-user]]/[app-name]]/cache/apt/cache/archives
+```
